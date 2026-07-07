@@ -900,7 +900,11 @@ async function eliminarRegistro(codigo) {
       mostrarModal('No se pudo eliminar', data.mensaje || 'Error desconocido.');
       return;
     }
-    mostrarToast('Registro eliminado correctamente');
+    if (data.aviso) {
+      mostrarModal('Aviso', data.aviso);
+    } else {
+      mostrarToast('Registro eliminado correctamente');
+    }
     if (data.resumen) dashboard = data.resumen;
     actualizarDashboard();
     await cargarHistorial();
