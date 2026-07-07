@@ -835,13 +835,78 @@ async function cargarHistorial() {
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <b>S/ ${monto}</b>
+          <button class="btnEliminarRegistro" data-codigo="${r.codigo || ''}" style="background:#7F1D1D;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer">🗑️ Eliminar</button>
         </div>
       `;
       lista.appendChild(div);
     });
+
+    // conectar los botones de eliminar recién creados
+    lista.querySelectorAll('.btnEliminarRegistro').forEach(btn => {
+      btn.addEventListener('click', () => confirmarEliminarRegistro(btn.dataset.codigo));
+    });
   } catch (err) {
     console.error('cargarHistorial', err);
     mostrarModal('Error', 'No se pudo cargar historial: ' + (err.message || ''));
+  }
+}
+
+/* ELIMINAR REGISTRO */
+let codigoAEliminar = null;
+
+function confirmarEliminarRegistro(codigo) {
+  if (!codigo) {
+    mostrarModal('Error', 'Este registro no tiene un código válido para eliminar.');
+    return;
+  }
+  codigoAEliminar = codigo;
+  document.getElementById('modalTitulo').innerText = 'Eliminar registro';
+  document.getElementById('modalMensaje').innerText = '¿Seguro que quieres eliminar este gasto? Esta acción no se puede deshacer.';
+
+  const caja = document.querySelector('#modal .modal-box');
+  let btnConfirmar = document.getElementById('btnConfirmarEliminar');
+  if (!btnConfirmar) {
+    btnConfirmar = document.createElement('button');
+    btnConfirmar.id = 'btnConfirmarEliminar';
+    btnConfirmar.style = 'background:#DC2626;color:#fff;border:none;border-radius:10px;padding:14px;margin-top:10px;width:100%;cursor:pointer;font-weight:600';
+    caja.appendChild(btnConfirmar);
+  }
+  btnConfirmar.innerText = 'Sí, eliminar';
+  btnConfirmar.style.display = 'block';
+  btnConfirmar.onclick = () => {
+    btnConfirmar.style.display = 'none';
+    eliminarRegistro(codigoAEliminar);
+  };
+  document.getElementById('modal').style.display = 'flex';
+}
+
+async function eliminarRegistro(codigo) {
+  cerrarModal();
+  try {
+    if (SIMULACION) {
+      historial = historial.filter(r => r.codigo !== codigo);
+      mostrarToast('Registro eliminado (modo simulación)');
+      await cargarHistorial();
+      return;
+    }
+    const res = await fetch(WEBAPP_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'eliminarGasto', usuario: usuarioActual.usuario, codigo })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.ok) {
+      mostrarModal('No se pudo eliminar', data.mensaje || 'Error desconocido.');
+      return;
+    }
+    mostrarToast('Registro eliminado correctamente');
+    if (data.resumen) dashboard = data.resumen;
+    actualizarDashboard();
+    await cargarHistorial();
+  } catch (err) {
+    console.error('eliminarRegistro', err);
+    mostrarModal('Error', 'No se pudo eliminar el registro: ' + (err.message || ''));
   }
 }
 
@@ -856,11 +921,15 @@ function mostrarToast(msg) {
 function mostrarModal(titulo, mensaje) {
   document.getElementById('modalTitulo').innerText = titulo;
   document.getElementById('modalMensaje').innerText = mensaje;
+  const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+  if (btnConfirmar) btnConfirmar.style.display = 'none';
   document.getElementById('modal').style.display = 'flex';
 }
 
 function cerrarModal() {
   document.getElementById('modal').style.display = 'none';
+  const btnConfirmar = document.getElementById('btnConfirmarEliminar');
+  if (btnConfirmar) btnConfirmar.style.display = 'none';
 }
 
 function abrirRegistrar() {
