@@ -16,8 +16,9 @@
    OPERAX V3 - estilos (combinado)
 =========================== */
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif}
+html,body{height:100%;overflow:hidden}
 body{background:#0B0F14;color:#fff;overflow-x:hidden}
-.screen{display:none;position:fixed;top:0;left:0;width:100%;min-height:100vh;padding:25px;padding-bottom:95px;animation:fade .35s ease;overflow-y:auto;background:#0B0F14}
+.screen{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100vh;height:100dvh;padding:25px;padding-bottom:110px;animation:fade .35s ease;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:#0B0F14}
 .screen.active{display:block}
 
 /* SPLASH */
@@ -101,7 +102,7 @@ body{background:#0B0F14;color:#fff;overflow-x:hidden}
 .btnCerrarSesion:hover{background:#B91C1C}
 
 /* MENU */
-.menu{position:fixed;bottom:0;left:0;right:0;height:75px;background:#111827;border-top:1px solid #2C394B;display:flex;justify-content:space-around;align-items:center}
+.menu{position:fixed;bottom:0;left:0;right:0;height:75px;background:#111827;border-top:1px solid #2C394B;display:flex;justify-content:space-around;align-items:center;z-index:100}
 .menu button{background:none;border:none;color:white;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-size:24px}
 .menu span{font-size:12px}
 
